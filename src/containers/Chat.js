@@ -13,7 +13,7 @@ class Chat extends Component {
 			userArea: 'showBlock',
 			users:[],
 			message: [],
-			endpoint: "https://chatroombackbymmitnn.herokuapp.com:8080"
+			endpoint: "https://chatroombackbymmitnn.herokuapp.com"
 	  }
 	}
 
