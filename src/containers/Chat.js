@@ -11,9 +11,10 @@ class Chat extends Component {
 			username: '',
 			messageArea: 'hideBlock',
 			userArea: 'showBlock',
+			joinUser: '',
 			users:[],
 			message: [],
-			endpoint: "https://chatroombackbymmitnn.herokuapp.com"
+			endpoint: "http://localhost:5000"
 	  }
 	}
 
@@ -26,6 +27,13 @@ class Chat extends Component {
 			  	</div>
 			);
 		});
+	}
+
+	renderNewUsers = () =>{
+		const { joinUser } = this.state;
+		return (
+			<span>{joinUser}</span> 
+		);
 	}
 
 	renderUsers = () =>{
@@ -42,8 +50,9 @@ class Chat extends Component {
 			return;
 		}
 		
-		const { endpoint, input, username } = this.state
+		const { endpoint, input, username, joinUser } = this.state
 		const socket = socketIOClient(endpoint)
+		//this.setState({ joinUser: '' })
 	  	socket.emit('sent-message', {username, input})
 		this.setState({ input: '' })
 
@@ -74,7 +83,7 @@ class Chat extends Component {
 	}
 
 	usersend = () => {
-		const { endpoint, username, users } = this.state
+		const { endpoint, username } = this.state
 		const socket = socketIOClient(endpoint)
 		if(username !== ""){
 			socket.emit('new user', {username})
@@ -83,15 +92,19 @@ class Chat extends Component {
 			socket.on('get users', (data) => {
 				this.setState({ users: data })
 			})
+
+			socket.on('join-new', (data) => {
+				console.log(data)
+				this.setState({ joinUser: data.message })
+			})
 	
 			this.setState({  messageArea: 'showBlock', userArea: 'hideBlock' })
 		}
 	}
   
 	response = () => {
-	  	const { endpoint, message, users } = this.state
+	  	const { endpoint, message } = this.state
 		const temp = message
-		const tmpUser = users
 		const socket = socketIOClient(endpoint)
 		socket.on('new-message', (messageNew) => {
 			temp.push(messageNew)
@@ -134,6 +147,9 @@ class Chat extends Component {
 						<div className="chat-list" id="data">
 							{
 							this.renderMessages()
+							}
+							{
+							this.renderNewUsers()
 							}
 						</div>
 						<div >
