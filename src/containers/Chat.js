@@ -11,29 +11,29 @@ class Chat extends Component {
 			username: '',
 			messageArea: 'hideBlock',
 			userArea: 'showBlock',
-			joinUser: '',
 			users:[],
 			message: [],
-			endpoint: "http://localhost:5000"
-	  }
+			socket: socketIOClient("http://localhost:5000")
+	  	}
 	}
 
 	renderMessages = () =>{
 		const { colors, users } = this.state;
+		console.log(this.state.message);
 		return this.state.message.map((data,i) => {
+			if(data.user === null){
+				return (
+					<div key={i}  >
+						 {data.message}
+					  </div>
+				);
+			}
 			return (
 				<div key={i}  >
 					<span style={{color:colors[users.indexOf(data.user)%9]}}>{data.user}</span> : {data.message}
-			  	</div>
+				</div>
 			);
 		});
-	}
-
-	renderNewUsers = () =>{
-		const { joinUser } = this.state;
-		return (
-			<span>{joinUser}</span> 
-		);
 	}
 
 	renderUsers = () =>{
@@ -50,10 +50,8 @@ class Chat extends Component {
 			return;
 		}
 		
-		const { endpoint, input, username, joinUser } = this.state
-		const socket = socketIOClient(endpoint)
-		//this.setState({ joinUser: '' })
-	  	socket.emit('sent-message', {username, input})
+		const { socket, input, username } = this.state
+		socket.emit('sent-message', {username, input})
 		this.setState({ input: '' })
 
 		window.setInterval(function() {
@@ -75,7 +73,21 @@ class Chat extends Component {
 	}
   
 	componentDidMount = () => {
-	  this.response()
+		this.response();
+	}
+
+	response = () => {
+		const { socket, message } = this.state;
+		
+		socket.on('get users', (data) => {
+			this.setState({ users: data });
+		});
+
+		socket.on('new-message', (messageNew) => {
+			const temp = message;
+			temp.push(messageNew);
+			this.setState({ message: temp });
+		});
 	}
   
 	send = (message) => {
@@ -83,33 +95,14 @@ class Chat extends Component {
 	}
 
 	usersend = () => {
-		const { endpoint, username } = this.state
-		const socket = socketIOClient(endpoint)
+		const { socket, username } = this.state
+
 		if(username !== ""){
 			socket.emit('new user', {username})
-			this.setState({ username: username })
-
-			socket.on('get users', (data) => {
-				this.setState({ users: data })
-			})
-
-			socket.on('join-new', (data) => {
-				console.log(data)
-				this.setState({ joinUser: data.message })
-			})
-	
-			this.setState({  messageArea: 'showBlock', userArea: 'hideBlock' })
+			socket.emit('sent-message', {username: null, input: username+" has Login"});
+			
+			this.setState({username,  messageArea: 'showBlock', userArea: 'hideBlock' })
 		}
-	}
-  
-	response = () => {
-	  	const { endpoint, message } = this.state
-		const temp = message
-		const socket = socketIOClient(endpoint)
-		socket.on('new-message', (messageNew) => {
-			temp.push(messageNew)
-			this.setState({ message: temp })
-		})
 	}
   
 	changeInput = (e) => {
@@ -147,9 +140,6 @@ class Chat extends Component {
 						<div className="chat-list" id="data">
 							{
 							this.renderMessages()
-							}
-							{
-							this.renderNewUsers()
 							}
 						</div>
 						<div >
