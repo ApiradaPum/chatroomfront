@@ -23,7 +23,7 @@ class Chat extends Component {
 		return this.state.message.map((data,i) => {
 			if(data.user === null){
 				return (
-					<div key={i}  >
+					<div key={i} className="text-cen"  >
 						 {data.message}
 					  </div>
 				);
@@ -83,11 +83,17 @@ class Chat extends Component {
 			this.setState({ users: data });
 		});
 
+		socket.on('user logout', (data) => {
+			socket.emit('sent-message', {username: null, input: data+" was logout"});
+		});
+
 		socket.on('new-message', (messageNew) => {
 			const temp = message;
 			temp.push(messageNew);
 			this.setState({ message: temp });
 		});
+
+		
 	}
   
 	send = (message) => {
@@ -99,7 +105,7 @@ class Chat extends Component {
 
 		if(username !== ""){
 			socket.emit('new user', {username})
-			socket.emit('sent-message', {username: null, input: username+" has Login"});
+			socket.emit('sent-message', {username: null, input: username+" has login"});
 			
 			this.setState({username,  messageArea: 'showBlock', userArea: 'hideBlock' })
 		}
