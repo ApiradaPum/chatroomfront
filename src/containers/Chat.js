@@ -13,7 +13,7 @@ class Chat extends Component {
 			userArea: 'showBlock',
 			users:[],
 			message: [],
-			socket: socketIOClient("http://localhost:5000")
+			socket: socketIOClient("https://chatroombackbymmitnn.herokuapp.com/")
 	  	}
 	}
 
