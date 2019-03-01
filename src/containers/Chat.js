@@ -1,39 +1,31 @@
 import React, {Component} from 'react';
 import socketIOClient from 'socket.io-client';
+import Messagesbox from "./Messagesbox";
 
 class Chat extends Component {
 	constructor() {
 	  super()
   
-	  this.state = {
+	  	this.state = {
 			colors: ['darksalmon', 'deepskyblue', 'darkgreen', 'cornflowerblue', 'brown', 'coral', 'blueviolet','red', 'blue'],
 			input: '',
 			username: '',
 			messageArea: 'hideBlock',
 			userArea: 'showBlock',
 			users:[],
-			message: [],
+			messages: [],
 			socket: socketIOClient("http://localhost:5000")
 	  	}
 	}
 
-	renderMessages = () =>{
-		const { colors, users } = this.state;
-		console.log(this.state.message);
-		return this.state.message.map((data,i) => {
-			if(data.user === null){
-				return (
-					<div key={i} className="text-cen"  >
-						 {data.message}
-					  </div>
-				);
-			}
-			return (
-				<div key={i}  >
-					<span style={{color:colors[users.indexOf(data.user)%9]}}>{data.user}</span> : {data.message}
-				</div>
-			);
-		});
+	sendMessage = (message) =>{
+		if(this.state.username === "" || message === ""){
+			return;
+		}
+		
+		const { socket, username } = this.state
+		socket.emit('sent-message', {username, message})
+
 	}
 
 	renderUsers = () =>{
@@ -44,27 +36,7 @@ class Chat extends Component {
 			);
 		});
 	}
-
-	sendMessage = () =>{
-		if(this.state.username === "" || this.state.input === ""){
-			return;
-		}
-		
-		const { socket, input, username } = this.state
-		socket.emit('sent-message', {username, input})
-		this.setState({ input: '' })
-
-		window.setInterval(function() {
-			var elem = document.getElementById('data');
-			elem.scrollTop = elem.scrollHeight;
-		}, 1000);
-	}
-
-	handleKeyPress = (e) => {
-		if(e.key === 'Enter'){
-			this.sendMessage()
-		}
-	}
+	
 
 	nameKeyPress = (e) => {
 		if(e.key === 'Enter'){
@@ -77,53 +49,46 @@ class Chat extends Component {
 	}
 
 	response = () => {
-		const { socket, message } = this.state;
+		const { socket, messages } = this.state;
 		
 		socket.on('get users', (data) => {
 			this.setState({ users: data });
 		});
 
 		socket.on('user logout', (data) => {
-			socket.emit('sent-message', {username: null, input: data+" was logout"});
+			socket.emit('sent-message', {username: null, message: data+" was logout"});
 		});
 
 		socket.on('new-message', (messageNew) => {
-			const temp = message;
+			const temp = messages;
 			temp.push(messageNew);
-			this.setState({ message: temp });
+			this.setState({ messages: temp });
 		});
+	}
 
-		
-	}
-  
-	send = (message) => {
-	  this.sendMessage()
-	}
 
 	usersend = () => {
 		const { socket, username } = this.state
 
 		if(username !== ""){
 			socket.emit('new user', {username})
-			socket.emit('sent-message', {username: null, input: username+" has login"});
+			socket.emit('sent-message', {username: null, message: username+" has login"});
 			
 			this.setState({username,  messageArea: 'showBlock', userArea: 'hideBlock' })
 		}
 	}
   
-	changeInput = (e) => {
-		this.setState({ input: e.target.value })
-	}
+	
 
 	changeName = (e) => {
 		this.setState({ username: e.target.value })
 	}
   
 	render() {
-	  	const { input,username } = this.state
+		const { input,username, users, userArea, messageArea, messages} = this.state
 		return (
 			<div>
-				<div id="userArea" className={this.state.userArea}>
+				<div id="userArea" className={userArea}>
 					<h3 className="chat-title">Welcome To Chat Room</h3>
 					<div className="padding-t-20">
 						<span>Name : </span> 
@@ -131,7 +96,7 @@ class Chat extends Component {
 						<button className="name-send" onClick={() => this.usersend()} >Send</button>
 					</div>
 				</div>
-				<div id="messageArea" className={this.state.messageArea} >
+				<div id="messageArea" className={messageArea} >
 					<div className="box-left">
 							<h2>Online Users</h2>
 							<ul className="list-group" id="users">
@@ -140,19 +105,7 @@ class Chat extends Component {
 								}
 							</ul>
 					</div>
-					<div className="box-right">
-						
-						<h3 className="chat-title">Welcome To Chat Room</h3>
-						<div className="chat-list" id="data">
-							{
-							this.renderMessages()
-							}
-						</div>
-						<div >
-							<input className="chat-input" value={input} onChange={this.changeInput} onKeyPress={this.handleKeyPress}/>
-							<button className="chat-send" onClick={() => this.send()} >Send</button>
-						</div>
-					</div>
+					<Messagesbox input={input} onSendMessage={this.sendMessage} users={users} messages={messages} />
 				</div>
 			</div>
 				
