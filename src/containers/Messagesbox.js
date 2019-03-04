@@ -66,5 +66,5 @@ class Messagesbox extends Component{
     }
 };
   
-  export default Messagesbox;
+export default Messagesbox;
   

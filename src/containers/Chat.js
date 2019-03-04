@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import socketIOClient from 'socket.io-client';
 import Messagesbox from "./Messagesbox";
+import UserLogin from "./UserLogin";
 
 class Chat extends Component {
 	constructor() {
@@ -36,13 +37,6 @@ class Chat extends Component {
 			);
 		});
 	}
-	
-
-	nameKeyPress = (e) => {
-		if(e.key === 'Enter'){
-			this.usersend()
-		}
-	}
   
 	componentDidMount = () => {
 		this.response();
@@ -67,8 +61,8 @@ class Chat extends Component {
 	}
 
 
-	usersend = () => {
-		const { socket, username } = this.state
+	usersend = (username) => {
+		const { socket } = this.state
 
 		if(username !== ""){
 			socket.emit('new user', {username})
@@ -77,25 +71,14 @@ class Chat extends Component {
 			this.setState({username,  messageArea: 'showBlock', userArea: 'hideBlock' })
 		}
 	}
-  
-	
 
-	changeName = (e) => {
-		this.setState({ username: e.target.value })
-	}
+	
   
 	render() {
-		const { input,username, users, userArea, messageArea, messages} = this.state
+		const { input, users, userArea, messageArea, messages} = this.state
 		return (
 			<div>
-				<div id="userArea" className={userArea}>
-					<h3 className="chat-title">Welcome To Chat Room</h3>
-					<div className="padding-t-20">
-						<span>Name : </span> 
-						<input className="inputName" value={username} onChange={this.changeName} onKeyPress={this.nameKeyPress} placeholder="Please enter your name"/>
-						<button className="name-send" onClick={() => this.usersend()} >Send</button>
-					</div>
-				</div>
+				<UserLogin userArea={userArea} onLogin={this.usersend} />
 				<div id="messageArea" className={messageArea} >
 					<div className="box-left">
 							<h2>Online Users</h2>
