@@ -14,7 +14,7 @@ class Chat extends Component {
 			messageArea: 'hideBlock',
 			userArea: 'showBlock',
 			users:[],
-			message: [],
+			messages: [],
 			socket: socketIOClient("https://chatroombackbymmitnn.herokuapp.com/")
 	  	}
 	}
