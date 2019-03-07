@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import socketIOClient from 'socket.io-client';
 import Messagesbox from "./Messagesbox";
 import UserLogin from "./UserLogin";
+import UserList from "./UserList";
 
 class Chat extends Component {
 	constructor() {
@@ -29,14 +30,7 @@ class Chat extends Component {
 
 	}
 
-	renderUsers = () =>{
-		const { colors } = this.state
-		return this.state.users.map((data,i) => {
-			return (
-				<li key={i} style={{color:colors[i%9]}}>{data}</li>
-			);
-		});
-	}
+	
   
 	componentDidMount = () => {
 		this.response();
@@ -80,14 +74,7 @@ class Chat extends Component {
 			<div>
 				<UserLogin userArea={userArea} onLogin={this.usersend} />
 				<div id="messageArea" className={messageArea} >
-					<div className="box-left">
-							<h2>Online Users</h2>
-							<ul className="list-group" id="users">
-								{
-								this.renderUsers()
-								}
-							</ul>
-					</div>
+					<UserList users={users} />
 					<Messagesbox input={input} onSendMessage={this.sendMessage} users={users} messages={messages} />
 				</div>
 			</div>
